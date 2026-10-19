@@ -11,8 +11,8 @@ body:
     id: model
     attributes:
       label: Model and snapshot
-      description: Include the exact model identifier or the closest available date/version.
-      placeholder: "Example: GPT-5.6, tested 2026-08-20"
+      description: Include the exact model identifier or the closest available date/version, and the date tested.
+      placeholder: "Exact model or snapshot; YYYY-MM-DD"
     validations:
       required: true
 
@@ -30,6 +30,8 @@ body:
     attributes:
       label: Instruction variant
       options:
+        - v5 Compact
+        - v5 Extended
         - v4 Compact
         - v4 Extended
         - v3
@@ -85,4 +87,3 @@ body:
           required: true
         - label: I have not included private, confidential, or personal data.
           required: true
-

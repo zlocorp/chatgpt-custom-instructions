@@ -1,0 +1,30 @@
+name: Documentation or broken link
+description: Report a typo, broken link, or unclear setup instruction.
+title: "[Docs]: "
+body:
+  - type: input
+    id: location
+    attributes:
+      label: Page or link
+      description: Where did you find the problem? Include the file or URL and section.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What needs fixing?
+      description: Describe the incorrect, missing, or confusing information.
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: Suggested correction
+      description: Optional. Include a primary source when suggesting changes to product behavior or limits.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy
+      options:
+        - label: I have removed private data and account details from this report.
+          required: true

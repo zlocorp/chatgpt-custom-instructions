@@ -1,74 +1,99 @@
 # ChatGPT Custom Instructions
 
-General-purpose, evidence-informed Custom Instructions for ChatGPT. This fork adds **v5**, updated for the GPT-6 family and optional rich or interactive presentation, while preserving the previous versions and upstream history.
+**Task-adaptive instructions for clear answers, grounded research, and useful presentation.**
 
-The prompts describe **preferences**, not new model capabilities or permissions. Neither variant requires a specific model, plugin, account-specific context, or writing style. Their effects are **not yet benchmark-proven**.
+Choose a version, copy its prompt, and paste it into ChatGPT Custom Instructions. No installation or plugins required.
 
-> [!IMPORTANT]
-> As of October 2026, ChatGPT Custom Instructions allow **1,500 characters for Free and Go**, and **5,000 characters for Plus, Pro, Business, Enterprise, and Education**. See the [official Custom Instructions FAQ](https://help.openai.com/en/articles/8096356-chatgpt-custom-instructions). Choose the variant for your plan and copy only its fenced prompt, not the surrounding Markdown.
+## Choose your version
 
-## Choose v5
+| Version | Prompt length | Field limit | Get started |
+| --- | ---: | ---: | --- |
+| **v5 Compact** | 1,394 characters | 1,500 characters | [Open prompt](v5-free.md) |
+| **v5 Extended** | 4,949 characters | 5,000 characters | [Open prompt](v5-5000.md) |
 
-### Free & Go: 1,500 characters
+Choose by the limit shown in your Custom Instructions field. Counts include spaces, tags where present, LF line breaks, and the final newline, but not the surrounding Markdown.
 
-**[v5 Compact](v5-free.md)** — **1,394 characters** with LF line endings.
+As of October 2026, the [official FAQ](https://help.openai.com/en/articles/8096356-chatgpt-custom-instructions) lists 1,500 characters for Free and Go, and 5,000 for Plus, Pro, Business, Enterprise, and Education.
 
-A shorter set of preferences covering useful answers, task completion, editing fidelity, evidence, proportionate checks, and optional visual presentation. It intentionally avoids rigid response templates.
+> Independently maintained. No controlled performance improvement has been demonstrated yet.
 
-### Plus / Pro / Business / Enterprise / Education: 5,000 characters
-
-**[v5 Extended](v5-5000.md)** — **4,949 characters** with LF line endings.
-
-The extended version adds detailed guidance for self-review, authorization boundaries, source handling, visual and document quality, clear explanations, and reporting limits. It supports mixed text-and-visual answers **when the active ChatGPT mode actually supports them**.
-
-## What changed in v5
-
-- **Task-specific quality checks:** define success for the task, correct material weaknesses, and stop when the result is complete; no mandatory 5–7-point rubric or repeated self-criticism.
-- **Follow-through with boundaries:** finish authorized work without re-asking for approval, while distinguishing analysis and drafting from publication, spending, disclosure, or destructive actions.
-- **Adaptive presentation:** use plain text, structured comparisons, visuals, charts, or supported interactive elements when they materially help. Keep publishable writing copyable and editable.
-- **Evidence over confidence:** distinguish sourced facts, estimates, and uncertainty; check changing claims and validate actual artifacts with proportionate tools and tests.
-- **Less compulsory process:** no mandatory persona, TL;DR, output format, document stack, or universal test suite.
-
-The extended and compact variants pursue the same goals at different levels of detail. Neither variant enables Intelligent UI in an unsupported mode.
-
-## How to use
+## Quick start
 
 1. Open **ChatGPT → Settings → Personalization → Custom Instructions**.
-2. Open [v5 Compact](v5-free.md) or [v5 Extended](v5-5000.md) according to the field limit shown for your plan.
-3. Copy **only the text inside the code block** and replace previous instructions. Do not combine variants.
-4. Use a new task to assess the behavior. Custom Instructions are preferences layered with ChatGPT's governing rules and the specific task; results can vary by model and mode.
+2. Choose **Compact** or **Extended** above and copy only the text inside its code block.
+3. **Replace** your previous instructions. Do not combine the two versions or paste the entire Markdown page.
+4. Try a representative task and compare the result with your usual setup.
 
-## Evaluation and limitations
+## What v5 focuses on
 
-**v5 is an editorial proposal, not a demonstrated performance improvement.** The text has been checked for its character limits and structure, but there are no controlled A/B results proving improved accuracy, lower cost, or faster completion on GPT-6 Astra, Sol, Sol 6.1, or other models. Individual features, including Intelligent UI, depend on product and mode availability.
+- **Useful answers:** match depth to the task, preserve editing requirements, and skip mandatory personas or response templates.
+- **Grounded work:** use relevant sources, distinguish evidence from assumptions, and check actual results.
+- **Completion with boundaries:** finish authorized work without treating drafting as permission to publish, spend, or disclose private data.
+- **Appropriate presentation:** use clear text, structured comparisons, visuals, or supported interactive elements when they help.
+- **Proportionate verification:** correct material problems without imposing a fixed-size rubric or endless self-criticism.
 
-A fair evaluation should compare an **empty Custom Instructions baseline** against the candidate under the same model or snapshot, reasoning setting, task set, tools, and scoring method. Preserve raw outputs and report failures and negative results, not only aggregate successes. Review the [contribution guidance](CONTRIBUTING.md) for reproducible reports.
+Extended spells out these preferences in more detail. Compact keeps the main priorities within the smaller field; it is not a line-for-line excerpt.
 
-The historical v3 MMLU-PRO results remain in [v3.md](v3.md), including the author's disclosure that a grader issue affected some answers. Those results **do not validate v5**.
+## FAQ
+
+### Which version should I use?
+
+Use the version that fits your available field. Compact is also an option when you prefer fewer defaults. A longer instruction is not automatically a better one.
+
+### Should I append this to my current instructions?
+
+No. Replace the previous general-purpose block, then reintroduce only personal preferences you still need. Check for contradictions and stay within the field limit.
+
+### Does this require a specific model or plugin?
+
+No. v5 was informed by current GPT-6 guidance, but does not select a model, set reasoning effort, install tools, or grant permissions. Effects can differ between models and tasks.
+
+### Will this enable visuals or Intelligent UI?
+
+No. Presentation preferences use capabilities already supported by the active mode. They cannot enable an unavailable feature. Plain text remains appropriate for many tasks.
+
+### Is v5 proven to improve answers?
+
+Not yet. Character counts and document structure are checkable; answer quality needs controlled comparisons. See the evaluation status below.
+
+## Evaluation status
+
+**v5 is an evidence-informed proposal, not a benchmark-proven improvement.** There are no controlled A/B results demonstrating higher accuracy, lower cost, or faster completion for these prompts on Astra, Sol, Sol 6.1, or other models.
+
+A useful comparison keeps the model or snapshot, reasoning setting, tasks, tools, and scoring method the same, with an empty Custom Instructions baseline. Preserve raw outputs and report failures and negative results alongside successes. See [Contributing](CONTRIBUTING.md) for reporting guidance.
+
+Historical [v3 evaluation results](v3.md), including the disclosed grader issue, do **not** validate v5.
 
 ## Earlier versions
 
-| Version | Scope | Notes |
-|---|---|---|
-| [v4 Extended](v4-5000.md) | 5,000 characters | Task-specific reflection, stopping conditions, sources, and checks. |
-| [v4 Compact](v4-free.md) | 1,500 characters | Shorter edition for Free and Go. |
-| [v3 archive](v3.md) | Historical | Earlier self-reflection prompt and evaluation caveats. |
-| [v2](v2.md) | Historical | Earlier iteration. |
-| [v1](v1.md) | Historical | Earlier iteration. |
+<details>
+<summary>Browse v1–v4 and the historical evaluation</summary>
 
-v4 retained the rubric concept from v3 while removing its arbitrary numerical acceptance threshold. v5 instead makes success criteria and actual verification task-dependent, and adds a dedicated presentation section in the extended edition.
+| Version | Purpose |
+| --- | --- |
+| [v4 Extended](v4-5000.md) | Earlier edition for a 5,000-character field. |
+| [v4 Compact](v4-free.md) | Earlier edition for a 1,500-character field. |
+| [v3](v3.md) | Earlier self-reflection prompt and evaluation caveats. |
+| [v2](v2.md) | Historical iteration. |
+| [v1](v1.md) | Historical iteration. |
 
-## References
+v4 kept task-specific reflection while removing the arbitrary numerical acceptance threshold from v3. v5 uses task-dependent success criteria and verification instead of a mandatory rubric, and adds a dedicated presentation section to Extended.
 
-- [OpenAI: Custom Instructions FAQ](https://help.openai.com/en/articles/8096356-chatgpt-custom-instructions) — field limits and behavior.
-- [OpenAI: Using GPT-6](https://developers.openai.com/api/docs/guides/latest-model) — model-family guidance.
-- [OpenAI: Rethinking skills and prompts for GPT-6 Astra](https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra) — prompt scope, redundant checks, and over-instruction.
-- [OpenAI: Intelligent UI in ChatGPT](https://help.openai.com/en/articles/20001598-intelligent-ui-in-chatgpt) — conditional rich presentation.
-- [OpenAI: ChatGPT release notes](https://help.openai.com/en/articles/6825453-chatgpt-release-notes).
-- [OpenAI: GPT-5 Prompting Guide](https://cookbook.openai.com/examples/gpt-5/gpt-5_prompting_guide) — historical background for the rubric approach.
+The earlier prompts and associated images remain unchanged.
 
-## Attribution
+</details>
 
-This repository is a fork of [thedisciple/chatgpt-custom-instructions](https://github.com/thedisciple/chatgpt-custom-instructions), itself a fork of [DenisSergeevitch/chatgpt-custom-instructions](https://github.com/DenisSergeevitch/chatgpt-custom-instructions) by **Denis Shiryaev**. The earlier versions, original contributions, repository history, and acknowledgments remain credited to their original authors. v5 builds upon the v4 approach rather than replacing its historical record.
+## Sources and attribution
 
-Contributions and reproducible evaluations are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
+Product references explain relevant behavior and limits; they are not experimental proof of prompt effectiveness.
+
+- [Custom Instructions FAQ](https://help.openai.com/en/articles/8096356-chatgpt-custom-instructions)
+- [Using GPT-6](https://developers.openai.com/api/docs/guides/latest-model)
+- [Rethinking skills and prompts for GPT-6 Astra](https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra)
+- [Intelligent UI in ChatGPT](https://help.openai.com/en/articles/20001598-intelligent-ui-in-chatgpt)
+- [ChatGPT release notes](https://help.openai.com/en/articles/6825453-chatgpt-release-notes)
+- [GPT-5 Prompting Guide](https://cookbook.openai.com/examples/gpt-5/gpt-5_prompting_guide), the historical background for the rubric approach
+
+This is an independently maintained fork of [thedisciple/chatgpt-custom-instructions](https://github.com/thedisciple/chatgpt-custom-instructions), itself a fork of [Denis Shiryaev's original repository](https://github.com/DenisSergeevitch/chatgpt-custom-instructions). Earlier versions and contributions remain credited to their original authors. v5 builds on v4 without replacing that history.
+
+Focused suggestions and reproducible evaluations are welcome. Read [Contributing](CONTRIBUTING.md) before submitting a change.
