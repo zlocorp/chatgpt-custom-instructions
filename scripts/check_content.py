@@ -90,10 +90,9 @@ def render_release_notes(tag: str, prompts: dict[str, str]) -> str:
         "Two independently maintained general-purpose Custom Instructions variants:\n\n"
         f"- **Compact:** {len(prompts['compact']):,} / 1,500 characters (Free and Go).\n"
         f"- **Extended:** {len(prompts['extended']):,} / 5,000 characters (larger Custom Instructions field).\n\n"
-        "Copy only one TXT file into ChatGPT Custom Instructions. The attachments were generated "
-        "directly from the Markdown prompts at this release tag and validated before publication.\n\n"
-        "These instructions are not benchmark-proven improvements; capabilities vary by model and mode. "
-        "See the repository README for setup instructions, evaluation limits, and upstream attribution.\n"
+        "Copy one TXT attachment into ChatGPT Custom Instructions, replacing previous general-purpose instructions.\n\n"
+        "Performance improvements have not yet been established in controlled tests. "
+        "See the repository README for setup and attribution.\n"
     )
 
 
