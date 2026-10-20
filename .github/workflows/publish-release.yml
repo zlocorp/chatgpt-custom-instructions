@@ -1,0 +1,49 @@
+name: Publish release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run release tooling tests
+        run: python -m unittest discover -s tests -v
+      - name: Validate and generate release assets
+        run: python scripts/check_content.py --release-tag "$GITHUB_REF_NAME" --export-dir "$RUNNER_TEMP/release"
+      - name: Create new GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "::error::Release $GITHUB_REF_NAME already exists; it will not be overwritten"
+            exit 1
+          fi
+          flags=()
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+            flags+=(--prerelease)
+          fi
+          gh release create "$GITHUB_REF_NAME" \
+            "$RUNNER_TEMP/release/custom-instructions-compact.txt" \
+            "$RUNNER_TEMP/release/custom-instructions-extended.txt" \
+            --verify-tag \
+            --fail-on-no-commits \
+            --title "$GITHUB_REF_NAME - ChatGPT Custom Instructions" \
+            --generate-notes \
+            --notes "$(cat "$RUNNER_TEMP/release/release-notes.md")" \
+            "${flags[@]}"

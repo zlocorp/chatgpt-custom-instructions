@@ -1,11 +1,14 @@
 name: Content checks
+
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
+
 permissions:
   contents: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -14,5 +17,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Validate prompts and links
+      - name: Test content tooling
+        run: python -m unittest discover -s tests -v
+      - name: Validate prompts, counts, and links
         run: python scripts/check_content.py
+      - name: Smoke-test generated release assets
+        run: |
+          python scripts/check_content.py --export-dir "${RUNNER_TEMP}/release-smoke"
+          test -s "${RUNNER_TEMP}/release-smoke/custom-instructions-compact.txt"
+          test -s "${RUNNER_TEMP}/release-smoke/custom-instructions-extended.txt"
+          test -s "${RUNNER_TEMP}/release-smoke/release-notes.md"

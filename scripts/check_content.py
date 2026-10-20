@@ -1,41 +1,129 @@
 #!/usr/bin/env python3
-"""Check prompt character limits, release exports, and local Markdown links."""
+"""Validate versioned Markdown prompts and build ephemeral release assets."""
+
+from __future__ import annotations
+
+import argparse
 from pathlib import Path
 import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-PROMPTS = {
-    "v5-free.md": (1500, 1394, "compact"),
-    "v5-5000.md": (5000, 4949, "extended"),
-}
+TAG_PATTERN = re.compile(
+    r"v(?P<version>[1-9][0-9]*(?:\.(?:0|[1-9][0-9]*)){0,2})"
+    r"(?:-(?:alpha|beta|rc)\.(?:0|[1-9][0-9]*))?\Z"
+)
+VERSION_FILE = re.compile(r"v(?P<version>[1-9][0-9]*(?:\.(?:0|[1-9][0-9]*)){0,2})-free\.md\Z")
+PROMPT_BLOCK = re.compile(r"^```text[ \t]*\n(.*?)\n```[ \t]*$", re.MULTILINE | re.DOTALL)
+DECLARED_COUNT = re.compile(r"The prompt (?:contains|is) \*\*([0-9,]+) characters\*\*", re.IGNORECASE)
+VARIANTS = {"compact": ("free", 1500), "extended": ("5000", 5000)}
 
-def check():
-    for filename, (limit, expected, variant) in PROMPTS.items():
-        source = (ROOT / filename).read_text(encoding="utf-8")
-        blocks = re.findall(r"```text\n(.*?)\n```", source, re.S)
-        if len(blocks) != 1:
-            raise ValueError(f"{filename}: expected exactly one text block")
-        prompt = blocks[0] + "\n"
-        if len(prompt) != expected or len(prompt) > limit:
-            raise ValueError(f"{filename}: {len(prompt)} characters (expected {expected}, limit {limit})")
-        export = ROOT / "release" / f"custom-instructions-{variant}.txt"
-        if export.read_bytes() != prompt.encode("utf-8"):
-            raise ValueError(f"{export}: does not match prompt")
-        print(f"PASS {filename}: {len(prompt)}/{limit}, export matches")
 
-    for path in [ROOT / "README.md", *ROOT.glob("v5-*.md")]:
-        for target in re.findall(r"\]\(([^)]+)\)", path.read_text(encoding="utf-8")):
-            if target.startswith(("http://", "https://", "#", "mailto:")):
-                continue
-            relative = target.split("#", 1)[0]
-            if relative and not (path.parent / relative).exists():
-                raise ValueError(f"{path.name}: missing link {target}")
-    print("PASS local Markdown links")
+def version_from_tag(tag: str) -> str:
+    match = TAG_PATTERN.fullmatch(tag)
+    if not match:
+        raise ValueError(f"Invalid release tag {tag!r}; expected v5, v5.1, v5.1.2, or v5.1-rc.1")
+    return f"v{match.group('version')}"
+
+
+def latest_version(root: Path) -> str:
+    candidates: list[tuple[tuple[int, int, int], str]] = []
+    for path in root.glob("v*-free.md"):
+        match = VERSION_FILE.fullmatch(path.name)
+        if match:
+            version = match.group("version")
+            components = [int(x) for x in version.split(".")]
+            key = tuple((components + [0, 0, 0])[:3])
+            candidates.append((key, f"v{version}"))
+    if not candidates:
+        raise ValueError("No versioned Compact prompt found")
+    return max(candidates)[1]
+
+
+def extract_prompt(markdown: str, path: Path, limit: int) -> str:
+    matches = list(PROMPT_BLOCK.finditer(markdown))
+    if len(matches) != 1:
+        raise ValueError(f"{path}: expected exactly one fenced ```text block; found {len(matches)}")
+    prompt = matches[0].group(1) + "\n"
+    declared = DECLARED_COUNT.search(markdown)
+    if not declared:
+        raise ValueError(f"{path}: missing declared character count")
+    expected = int(declared.group(1).replace(",", ""))
+    if len(prompt) != expected:
+        raise ValueError(f"{path}: {len(prompt)} characters, but document declares {expected}")
+    if len(prompt) > limit:
+        raise ValueError(f"{path}: {len(prompt)} characters, exceeds {limit} limit")
+    return prompt
+
+
+def validate_local_links(path: Path) -> None:
+    content = path.read_text(encoding="utf-8")
+    for target in re.findall(r"\]\(([^)]+)\)", content):
+        if target.startswith(("http://", "https://", "#", "mailto:")):
+            continue
+        relative = target.split("#", 1)[0]
+        if relative and not (path.parent / relative).exists():
+            raise ValueError(f"{path}: missing local Markdown target {target}")
+
+
+def load_validated_prompts(root: Path, version: str) -> dict[str, str]:
+    prompts: dict[str, str] = {}
+    readme = (root / "README.md").read_text(encoding="utf-8")
+    for variant, (suffix, limit) in VARIANTS.items():
+        path = root / f"{version}-{suffix}.md"
+        markdown = path.read_text(encoding="utf-8")
+        prompt = extract_prompt(markdown, path, limit)
+        declared_in_readme = f"| **{version} {variant.title()}** | {len(prompt):,} characters"
+        if declared_in_readme not in readme:
+            raise ValueError(f"README.md: missing or stale character count for {version} {variant}")
+        prompts[variant] = prompt
+        validate_local_links(path)
+        print(f"PASS {path.name}: {len(prompt)}/{limit} characters")
+    validate_local_links(root / "README.md")
+    print("PASS local Markdown links and README counts")
+    return prompts
+
+
+def render_release_notes(tag: str, prompts: dict[str, str]) -> str:
+    return (
+        f"# {tag} — ChatGPT Custom Instructions\n\n"
+        "Two independently maintained general-purpose Custom Instructions variants:\n\n"
+        f"- **Compact:** {len(prompts['compact']):,} / 1,500 characters (Free and Go).\n"
+        f"- **Extended:** {len(prompts['extended']):,} / 5,000 characters (larger Custom Instructions field).\n\n"
+        "Copy only one TXT file into ChatGPT Custom Instructions. The attachments were generated "
+        "directly from the Markdown prompts at this release tag and validated before publication.\n\n"
+        "These instructions are not benchmark-proven improvements; capabilities vary by model and mode. "
+        "See the repository README for setup instructions, evaluation limits, and upstream attribution.\n"
+    )
+
+
+def export_assets(output_dir: Path, tag: str, prompts: dict[str, str]) -> None:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    for variant, prompt in prompts.items():
+        path = output_dir / f"custom-instructions-{variant}.txt"
+        path.write_bytes(prompt.encode("utf-8"))
+        if path.read_bytes() != prompt.encode("utf-8"):
+            raise ValueError(f"Failed to verify generated {path}")
+        print(f"BUILT {path.name}")
+    (output_dir / "release-notes.md").write_text(render_release_notes(tag, prompts), encoding="utf-8")
+    print("BUILT release-notes.md")
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--release-tag", help="Validate prompts for this exact release version tag")
+    parser.add_argument("--export-dir", type=Path, help="Generate release assets into this external directory")
+    args = parser.parse_args(argv)
+
+    version = version_from_tag(args.release_tag) if args.release_tag else latest_version(ROOT)
+    prompts = load_validated_prompts(ROOT, version)
+    if args.export_dir:
+        export_assets(args.export_dir, args.release_tag or version, prompts)
+
 
 if __name__ == "__main__":
     try:
-        check()
+        main()
     except (OSError, ValueError) as error:
         print(f"FAIL {error}", file=sys.stderr)
         sys.exit(1)

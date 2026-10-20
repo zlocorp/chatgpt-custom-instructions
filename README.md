@@ -24,6 +24,8 @@ As of October 2026, the [official FAQ](https://help.openai.com/en/articles/80963
 3. **Replace** your previous instructions. Do not combine the two versions or paste the entire Markdown page.
 4. Try a representative task and compare the result with your usual setup.
 
+For direct TXT downloads, use the [latest GitHub Release](https://github.com/zlocorp/chatgpt-custom-instructions/releases/latest). Future release attachments are generated from their versioned Markdown sources automatically; see the [release process](release/README.md).
+
 ## What v5 focuses on
 
 - **Useful answers:** match depth to the task, preserve editing requirements, and skip mandatory personas or response templates.
