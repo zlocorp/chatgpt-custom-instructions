@@ -1,5 +1,7 @@
 # v4 Compact — Free & Go
 
+> Historical v4, preserved from the 2026-08 review. For the current GPT-6-reviewed prompts and product behavior, see [README.md](README.md). The prompt below is unchanged.
+
 For ChatGPT **Free** and **Go** plans. OpenAI currently limits Custom Instructions on these plans to **1,500 characters**.
 
 This prompt is **1,455 characters** including line breaks inside the code block, leaving a small safety margin.
@@ -33,4 +35,4 @@ Copy only the contents of the code block into **Settings → Personalization →
 
 The goal is not to squeeze every possible preference into 1,500 characters. It keeps the highest-value general behaviors: task-specific quality criteria, a stopping rule, evidence-based verification, adaptive depth, and no mandatory presentation rituals.
 
-See the [main README](README.md) for the evidence and rationale behind v4.
+See [the changelog](CHANGELOG.md) for the current review. Historical v4 rationale is preserved in git history.

@@ -12,7 +12,7 @@ body:
     attributes:
       label: Model and snapshot
       description: Include the exact model identifier or the closest available date/version.
-      placeholder: "Example: GPT-5.6, tested 2026-08-20"
+      placeholder: "Example: GPT-6 Sol in Chat, tested 2026-10-25"
     validations:
       required: true
 
@@ -21,7 +21,7 @@ body:
     attributes:
       label: Environment
       description: ChatGPT plan or API setup, including reasoning effort and relevant settings.
-      placeholder: "Example: ChatGPT Plus, high reasoning, web disabled"
+      placeholder: "Example: ChatGPT Plus / Chat, High reasoning, search enabled; memory off"
     validations:
       required: true
 
@@ -30,8 +30,11 @@ body:
     attributes:
       label: Instruction variant
       options:
-        - v4 Compact
-        - v4 Extended
+        - ChatGPT Compact (2026-10)
+        - ChatGPT Extended (2026-10)
+        - Codex global (2026-10)
+        - Historical v4 Compact
+        - Historical v4 Extended
         - v3
         - Other
     validations:

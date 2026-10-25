@@ -26,7 +26,9 @@ Keep pull requests focused and easy to review.
 
 - Preserve the project history and upstream attribution.
 - Keep the published prompts general-purpose; do not add contributor-specific preferences or account details.
-- Recalculate stated character counts when a prompt changes.
+- Recalculate stated character counts when a prompt changes (prompt block only, LF line breaks, no trailing newline).
+- Distinguish static documentation checks from executed model evaluations. Record the surface (Chat, Work, or Codex), memory, personality, and project guidance when reporting behavior.
+- Use the current variants linked from README; keep historical prompt blocks unchanged.
 - Prefer primary sources for current product behavior and limits.
 - Do not claim an improvement without a comparable result or clearly label the claim as a hypothesis.
 
