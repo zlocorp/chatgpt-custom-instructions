@@ -47,7 +47,7 @@ No. It can request supported presentation formats but cannot enable capabilities
 
 ## Evaluation status
 
-There are no controlled A/B results demonstrating better accuracy, lower cost, or faster completion for v5. To evaluate it, compare against an empty-instructions baseline using the same model, reasoning setting, tasks, tools, and scoring method. Preserve raw outputs and report failures as well as successes; see [Contributing](CONTRIBUTING.md).
+There are no controlled A/B results demonstrating better accuracy, lower cost, or faster completion for v5. To evaluate it, compare against an empty-instructions baseline using the same model, reasoning setting, tasks, tools, and scoring method. Preserve raw outputs and report failures as well as successes; see the [12-case evaluation guide](EVALUATION.md) and [Contributing](CONTRIBUTING.md).
 
 Historical [v3 evaluation results](v3.md), including the documented grader issue, do not establish v5 performance.
 

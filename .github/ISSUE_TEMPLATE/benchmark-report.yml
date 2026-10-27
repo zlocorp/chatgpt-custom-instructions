@@ -20,8 +20,8 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: ChatGPT plan or API setup, including reasoning effort and relevant settings.
-      placeholder: "Example: ChatGPT Plus, high reasoning, web disabled"
+      description: Specify Chat, Work, or API, plus plan, reasoning effort, tools, memory, personality, and project guidance when applicable.
+      placeholder: "Example: ChatGPT Plus / Chat / High / search on / memory off / default style"
     validations:
       required: true
 
