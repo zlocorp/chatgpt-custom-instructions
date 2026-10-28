@@ -52,6 +52,63 @@ class ContentChecksTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "exceeds"):
             extract_prompt(source, Path("example.md"), 5)
 
+    def test_reject_crlf_overflow_when_lf_fits(self):
+        for limit in (1500, 5000):
+            with self.subTest(limit=limit):
+                prompt = "x" * (limit - 3) + "\n\n"
+                source = (
+                    f"The prompt contains **{len(prompt)} characters**.\n"
+                    f"```text\n{prompt}```\n"
+                )
+                self.assertLess(len(prompt), limit)
+                with self.assertRaisesRegex(ValueError, "CRLF.*exceeds"):
+                    extract_prompt(source, Path("example.md"), limit)
+
+    def test_accept_crlf_exact_limit_including_final_newline(self):
+        for limit in (1500, 5000):
+            with self.subTest(limit=limit):
+                prompt = "x" * (limit - 2) + "\n"
+                source = (
+                    f"The prompt contains **{len(prompt)} characters**.\n"
+                    f"```text\n{prompt}```\n"
+                )
+                result = extract_prompt(source, Path("example.md"), limit)
+                self.assertEqual(result, prompt)
+                self.assertEqual(len(result.replace("\n", "\r\n")), limit)
+
+    def test_extract_normalizes_crlf_source_to_lf(self):
+        source = (
+            "The prompt contains **6 characters**; **7** with CRLF line breaks.\n"
+            "```text\nHELLO\n```\n"
+        ).replace("\n", "\r\n")
+        self.assertEqual(extract_prompt(source, Path("example.md"), 1500), "HELLO\n")
+
+    def test_reject_stale_declared_crlf_counts(self):
+        for label in ("**8** with CRLF line breaks", "**8 characters** with CRLF endings"):
+            with self.subTest(label=label):
+                source = f"The prompt contains **6 characters**; {label}.\n```text\nHELLO\n```\n"
+                with self.assertRaisesRegex(ValueError, "CRLF.*declares"):
+                    extract_prompt(source, Path("example.md"), 1500)
+
+    def test_accept_declared_crlf_count_formats(self):
+        prompt = "x" * 999 + "\n"
+        for label in ("**1001** with CRLF line breaks", "**1,001 characters** with CRLF endings"):
+            with self.subTest(label=label):
+                source = f"The prompt is **1,000 characters**; {label}.\n```text\n{prompt}```\n"
+                self.assertEqual(extract_prompt(source, Path("example.md"), 1500), prompt)
+
+    def test_crlf_source_exports_canonical_lf_bytes(self):
+        source = (
+            "The prompt contains **6 characters**; **7** with CRLF line breaks.\n"
+            "```text\nHELLO\n```\n"
+        ).replace("\n", "\r\n")
+        prompt = extract_prompt(source, Path("example.md"), 1500)
+        with TemporaryDirectory() as temp:
+            out = Path(temp)
+            export_assets(out, "v5", {"compact": prompt, "extended": prompt})
+            for variant in ("compact", "extended"):
+                self.assertEqual((out / f"custom-instructions-{variant}.txt").read_bytes(), b"HELLO\n")
+
     def test_load_full_fixture_and_reject_stale_readme(self):
         with TemporaryDirectory() as temp:
             root = Path(temp)

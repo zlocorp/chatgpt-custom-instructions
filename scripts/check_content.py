@@ -16,6 +16,9 @@ TAG_PATTERN = re.compile(
 VERSION_FILE = re.compile(r"v(?P<version>[1-9][0-9]*(?:\.(?:0|[1-9][0-9]*)){0,2})-free\.md\Z")
 PROMPT_BLOCK = re.compile(r"^```text[ \t]*\n(.*?)\n```[ \t]*$", re.MULTILINE | re.DOTALL)
 DECLARED_COUNT = re.compile(r"The prompt (?:contains|is) \*\*([0-9,]+) characters\*\*", re.IGNORECASE)
+DECLARED_CRLF_COUNT = re.compile(
+    r"\*\*([0-9,]+)(?: characters)?\*\* with CRLF(?: line breaks| endings)", re.IGNORECASE
+)
 VARIANTS = {"compact": ("free", 1500), "extended": ("5000", 5000)}
 
 
@@ -41,6 +44,7 @@ def latest_version(root: Path) -> str:
 
 
 def extract_prompt(markdown: str, path: Path, limit: int) -> str:
+    markdown = markdown.replace("\r\n", "\n")
     matches = list(PROMPT_BLOCK.finditer(markdown))
     if len(matches) != 1:
         raise ValueError(f"{path}: expected exactly one fenced ```text block; found {len(matches)}")
@@ -53,6 +57,14 @@ def extract_prompt(markdown: str, path: Path, limit: int) -> str:
         raise ValueError(f"{path}: {len(prompt)} characters, but document declares {expected}")
     if len(prompt) > limit:
         raise ValueError(f"{path}: {len(prompt)} characters, exceeds {limit} limit")
+    crlf_count = len(prompt.replace("\n", "\r\n"))
+    if crlf_count > limit:
+        raise ValueError(f"{path}: {crlf_count} characters with CRLF, exceeds {limit} limit")
+    declared_crlf = DECLARED_CRLF_COUNT.search(markdown)
+    if declared_crlf:
+        expected_crlf = int(declared_crlf.group(1).replace(",", ""))
+        if crlf_count != expected_crlf:
+            raise ValueError(f"{path}: {crlf_count} characters with CRLF, but document declares {expected_crlf}")
     return prompt
 
 
@@ -78,7 +90,8 @@ def load_validated_prompts(root: Path, version: str) -> dict[str, str]:
             raise ValueError(f"README.md: missing or stale character count for {version} {variant}")
         prompts[variant] = prompt
         validate_local_links(path)
-        print(f"PASS {path.name}: {len(prompt)}/{limit} characters")
+        crlf_count = len(prompt.replace("\n", "\r\n"))
+        print(f"PASS {path.name}: {len(prompt)}/{limit} LF, {crlf_count}/{limit} CRLF characters")
     validate_local_links(root / "README.md")
     print("PASS local Markdown links and README counts")
     return prompts

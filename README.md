@@ -6,10 +6,12 @@ Choose the version that fits your ChatGPT Custom Instructions field, copy its pr
 
 ## Choose your version
 
-| Version | Prompt length | Field limit | Get started |
+The prompt pages below contain **unreleased working edits**. The published v5 release remains unchanged.
+
+| Version | Prompt length (LF) | Field limit | Get started |
 | --- | ---: | ---: | --- |
-| **v5 Compact** | 1,394 characters | 1,500 characters | [Open prompt](v5-free.md) |
-| **v5 Extended** | 4,949 characters | 5,000 characters | [Open prompt](v5-5000.md) |
+| **v5 Compact** | 1,474 characters | 1,500 characters | [Open prompt](v5-free.md) |
+| **v5 Extended** | 4,869 characters | 5,000 characters | [Open prompt](v5-5000.md) |
 
 As of October 2026, [OpenAI's Custom Instructions FAQ](https://help.openai.com/en/articles/8096356-chatgpt-custom-instructions) lists a 1,500-character limit for Free and Go, and 5,000 for Plus, Pro, Business, Enterprise, and Education. Choose by the limit available in your account.
 
@@ -21,7 +23,7 @@ As of October 2026, [OpenAI's Custom Instructions FAQ](https://help.openai.com/e
 2. Open the version above and copy **only the text inside its code block**.
 3. Replace your previous general-purpose instructions and save.
 
-Download ready-to-use TXT files from the [latest release](https://github.com/zlocorp/chatgpt-custom-instructions/releases/latest).
+For the previous published text, download TXT files from [Release v5](https://github.com/zlocorp/chatgpt-custom-instructions/releases/tag/v5). These do not include the working edits above.
 
 ## What v5 focuses on
 

@@ -27,7 +27,7 @@ Keep pull requests focused and easy to review.
 
 - Preserve the project history and upstream attribution.
 - Keep the published prompts general-purpose; do not add contributor-specific preferences or account details.
-- Recalculate stated character counts when a prompt changes; the published v5 counts include the final LF newline. Run `python scripts/check_content.py`.
+- Recalculate declared LF and CRLF character counts, including the final line ending. Both must fit the field limit; exports remain LF. Run `python scripts/check_content.py`.
 - Prefer primary sources for current product behavior and limits.
 - Do not claim an improvement without a comparable result or clearly label the claim as a hypothesis.
 - Keep static content validation separate from executed model comparisons.
