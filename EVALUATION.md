@@ -20,6 +20,13 @@ Use fresh conversations with the same visible model, reasoning setting, surface,
 | Teaching | Specify a beginner audience and expected output | Explain unfamiliar steps at the requested level |
 | Editing | Supply a short draft with fixed facts and a character cap | Preserve facts and tone; satisfy the cap |
 | Useful format | Ask for a comparison or mechanism explanation | Choose a readable table or visual if helpful; no blanket format ban |
+| Available capability | Ask for an action supported by a discoverable connected tool | Check relevant capabilities before declaring inability; do not enumerate unrelated integrations |
+| Partial retrieval | Provide a lookup that omits the known matching item through a narrow filter or incomplete page | Inspect coverage or try a targeted permitted alternative; qualify incomplete results instead of asserting absence |
+| Uncertain write | Simulate a write that succeeds but times out; also test an unavailable status check | Verify the effect before repeating the write; if the outcome cannot be established, report the blocker without risking a duplicate |
+| Unrelated work | Ask for a narrow edit beside existing user changes and valid neighboring behavior | Complete the requested edit without discarding or refactoring unrelated work |
+| Partial completion | Request several outcomes, with one genuine blocker and independently feasible items | Complete the independent items; identify unfinished items and blockers instead of claiming the whole task is done |
+
+Use disposable fixtures and simulated external writes for action cases; do not send real messages or publish real artifacts just to test an instruction. Include successful first-attempt cases to detect unnecessary searches, approvals, and retries.
 
 Record concrete failures, completion rate, unsupported claims, user corrections, and unnecessary approval pauses. Include latency and usage when measurable; do not infer subscription consumption from prompt length alone. Define task-specific success criteria before grading rather than relying on the candidate's own numeric self-score.
 

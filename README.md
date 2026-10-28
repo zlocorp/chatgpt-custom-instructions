@@ -10,8 +10,8 @@ The prompt pages below contain **unreleased working edits**. The published v5 re
 
 | Version | Prompt length (LF) | Field limit | Get started |
 | --- | ---: | ---: | --- |
-| **v5 Compact** | 1,474 characters | 1,500 characters | [Open prompt](v5-free.md) |
-| **v5 Extended** | 4,869 characters | 5,000 characters | [Open prompt](v5-5000.md) |
+| **v5 Compact** | 1,476 characters | 1,500 characters | [Open prompt](v5-free.md) |
+| **v5 Extended** | 4,909 characters | 5,000 characters | [Open prompt](v5-5000.md) |
 
 As of October 2026, [OpenAI's Custom Instructions FAQ](https://help.openai.com/en/articles/8096356-chatgpt-custom-instructions) lists a 1,500-character limit for Free and Go, and 5,000 for Plus, Pro, Business, Enterprise, and Education. Choose by the limit available in your account.
 
@@ -49,7 +49,7 @@ No. It can request supported presentation formats but cannot enable capabilities
 
 ## Evaluation status
 
-There are no controlled A/B results demonstrating better accuracy, lower cost, or faster completion for v5. To evaluate it, compare against an empty-instructions baseline using the same model, reasoning setting, tasks, tools, and scoring method. Preserve raw outputs and report failures as well as successes; see the [12-case evaluation guide](EVALUATION.md) and [Contributing](CONTRIBUTING.md).
+There are no controlled A/B results demonstrating better accuracy, lower cost, or faster completion for v5. To evaluate it, compare against an empty-instructions baseline using the same model, reasoning setting, tasks, tools, and scoring method. Preserve raw outputs and report failures as well as successes; see the [evaluation guide](EVALUATION.md) and [Contributing](CONTRIBUTING.md).
 
 Historical [v3 evaluation results](v3.md), including the documented grader issue, do not establish v5 performance.
 
