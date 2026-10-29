@@ -2,6 +2,8 @@ name: Publish release
 
 on:
   push:
+    branches:
+      - 'release/v[0-9]*'
     tags:
       - 'v[0-9]*'
   create:
@@ -16,7 +18,7 @@ concurrency:
 jobs:
   publish:
     if: >-
-      github.event_name == 'push' ||
+      (github.event_name == 'push' && (github.ref_type == 'tag' || github.event.created == false)) ||
       (github.event_name == 'create' && github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release/v'))
     runs-on: ubuntu-latest
     steps:
@@ -35,7 +37,7 @@ jobs:
           set -euo pipefail
           case "$GITHUB_EVENT_NAME:$GITHUB_REF_TYPE:$GITHUB_REF_NAME" in
             push:tag:v*) tag="$GITHUB_REF_NAME" ;;
-            create:branch:release/v*) tag="${GITHUB_REF_NAME#release/}" ;;
+            create:branch:release/v*|push:branch:release/v*) tag="${GITHUB_REF_NAME#release/}" ;;
             *) echo "::error::Not an explicit release request"; exit 1 ;;
           esac
           python -c 'import sys; from scripts.check_content import version_from_tag; version_from_tag(sys.argv[1])' "$tag"
@@ -71,34 +73,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ steps.version.outputs.tag }}
         shell: bash
-        run: |
-          set -euo pipefail
-          gh api --paginate "repos/$GITHUB_REPOSITORY/releases" --jq '.[].tag_name' > "$RUNNER_TEMP/existing-releases.txt"
-          if grep -Fxq -- "$RELEASE_TAG" "$RUNNER_TEMP/existing-releases.txt"; then
-            echo "::error::Release $RELEASE_TAG already exists; it will not be overwritten"
-            exit 1
-          fi
-          flags=(--target "$(git rev-parse HEAD)")
-          if [[ "$GITHUB_REF_TYPE" == tag ]]; then flags+=(--verify-tag); fi
-          if [[ "$RELEASE_TAG" == *-* ]]; then flags+=(--prerelease); fi
-          gh release create "$RELEASE_TAG" \
-            "$RUNNER_TEMP/release/custom-instructions-compact.txt" \
-            "$RUNNER_TEMP/release/custom-instructions-extended.txt" \
-            --draft --fail-on-no-commits \
-            --title "$RELEASE_TAG - ChatGPT Custom Instructions" \
-            --notes-file "$RUNNER_TEMP/release/release-notes.md" \
-            "${flags[@]}"
-          git fetch origin "refs/tags/$RELEASE_TAG"
-          test "$(git rev-parse 'FETCH_HEAD^{commit}')" = "$(git rev-parse HEAD)"
-          gh release download "$RELEASE_TAG" --dir "$RUNNER_TEMP/release-check" --pattern 'custom-instructions-*.txt'
-          cmp "$RUNNER_TEMP/release/custom-instructions-compact.txt" "$RUNNER_TEMP/release-check/custom-instructions-compact.txt"
-          cmp "$RUNNER_TEMP/release/custom-instructions-extended.txt" "$RUNNER_TEMP/release-check/custom-instructions-extended.txt"
-          if [[ "$RELEASE_TAG" == *-* ]]; then
-            gh release edit "$RELEASE_TAG" --draft=false --latest=false
-          else
-            gh release edit "$RELEASE_TAG" --draft=false --latest
-          fi
+        run: bash scripts/publish_release.sh
       - name: Remove completed release request branch
-        if: github.event_name == 'create' && github.event.ref_type == 'branch'
+        if: github.ref_type == 'branch' && startsWith(github.ref_name, 'release/v')
         continue-on-error: true
         run: git push origin --delete "$GITHUB_REF_NAME"
