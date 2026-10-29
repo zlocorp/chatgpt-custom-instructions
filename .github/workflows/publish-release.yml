@@ -4,46 +4,101 @@ on:
   push:
     tags:
       - 'v[0-9]*'
+  create:
 
 permissions:
   contents: write
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-publication
   cancel-in-progress: false
 
 jobs:
   publish:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'create' && github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release/v'))
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout tagged source
-        uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout exact release source
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+      - name: Resolve and validate release target
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$GITHUB_EVENT_NAME:$GITHUB_REF_TYPE:$GITHUB_REF_NAME" in
+            push:tag:v*) tag="$GITHUB_REF_NAME" ;;
+            create:branch:release/v*) tag="${GITHUB_REF_NAME#release/}" ;;
+            *) echo "::error::Not an explicit release request"; exit 1 ;;
+          esac
+          python -c 'import sys; from scripts.check_content import version_from_tag; version_from_tag(sys.argv[1])' "$tag"
+          git merge-base --is-ancestor HEAD origin/main
+          if existing=$(git rev-parse -q --verify "refs/tags/$tag^{commit}"); then
+            test "$existing" = "$(git rev-parse HEAD)"
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
       - name: Run release tooling tests
         run: python -m unittest discover -s tests -v
       - name: Validate and generate release assets
-        run: python scripts/check_content.py --release-tag "$GITHUB_REF_NAME" --export-dir "$RUNNER_TEMP/release"
-      - name: Create new GitHub Release
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: python scripts/check_content.py --release-tag "$RELEASE_TAG" --export-dir "$RUNNER_TEMP/release"
+      - name: Include the version changelog
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        shell: python
+        run: |
+          import os
+          import re
+          from pathlib import Path
+          tag = os.environ["RELEASE_TAG"]
+          changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
+          pattern = rf"^## {re.escape(tag)}(?: - [^\n]+)?\n(.*?)(?=^## |\Z)"
+          entry = re.search(pattern, changelog, re.MULTILINE | re.DOTALL)
+          if entry is None or not entry.group(1).strip():
+              raise SystemExit(f"Missing changelog entry for {tag}")
+          notes = Path(os.environ["RUNNER_TEMP"]) / "release" / "release-notes.md"
+          notes.write_text(notes.read_text(encoding="utf-8") + "\n## Changes\n\n" + entry.group(1).strip() + "\n", encoding="utf-8")
+      - name: Publish verified release attachments
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
         shell: bash
         run: |
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            echo "::error::Release $GITHUB_REF_NAME already exists; it will not be overwritten"
+          set -euo pipefail
+          gh api --paginate "repos/$GITHUB_REPOSITORY/releases" --jq '.[].tag_name' > "$RUNNER_TEMP/existing-releases.txt"
+          if grep -Fxq -- "$RELEASE_TAG" "$RUNNER_TEMP/existing-releases.txt"; then
+            echo "::error::Release $RELEASE_TAG already exists; it will not be overwritten"
             exit 1
           fi
-          flags=()
-          if [[ "$GITHUB_REF_NAME" == *-* ]]; then
-            flags+=(--prerelease)
-          fi
-          gh release create "$GITHUB_REF_NAME" \
+          flags=(--target "$(git rev-parse HEAD)")
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then flags+=(--verify-tag); fi
+          if [[ "$RELEASE_TAG" == *-* ]]; then flags+=(--prerelease); fi
+          gh release create "$RELEASE_TAG" \
             "$RUNNER_TEMP/release/custom-instructions-compact.txt" \
             "$RUNNER_TEMP/release/custom-instructions-extended.txt" \
-            --verify-tag \
-            --fail-on-no-commits \
-            --title "$GITHUB_REF_NAME - ChatGPT Custom Instructions" \
-            --generate-notes \
-            --notes "$(cat "$RUNNER_TEMP/release/release-notes.md")" \
+            --draft --fail-on-no-commits \
+            --title "$RELEASE_TAG - ChatGPT Custom Instructions" \
+            --notes-file "$RUNNER_TEMP/release/release-notes.md" \
             "${flags[@]}"
+          git fetch origin "refs/tags/$RELEASE_TAG"
+          test "$(git rev-parse 'FETCH_HEAD^{commit}')" = "$(git rev-parse HEAD)"
+          gh release download "$RELEASE_TAG" --dir "$RUNNER_TEMP/release-check" --pattern 'custom-instructions-*.txt'
+          cmp "$RUNNER_TEMP/release/custom-instructions-compact.txt" "$RUNNER_TEMP/release-check/custom-instructions-compact.txt"
+          cmp "$RUNNER_TEMP/release/custom-instructions-extended.txt" "$RUNNER_TEMP/release-check/custom-instructions-extended.txt"
+          if [[ "$RELEASE_TAG" == *-* ]]; then
+            gh release edit "$RELEASE_TAG" --draft=false --latest=false
+          else
+            gh release edit "$RELEASE_TAG" --draft=false --latest
+          fi
+      - name: Remove completed release request branch
+        if: github.event_name == 'create' && github.event.ref_type == 'branch'
+        continue-on-error: true
+        run: git push origin --delete "$GITHUB_REF_NAME"

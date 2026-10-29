@@ -1,28 +1,30 @@
 # Publishing releases
 
-Versioned Markdown files in the repository root are the source of truth. GitHub Actions generates the two downloadable TXT attachments when a new version tag is pushed.
+Versioned Markdown files are the source of truth. GitHub Actions generates the two TXT attachments; do not maintain separate copies in Git.
 
-## Publish a new version
+## Prepare a version
 
-1. Add the version's Markdown files, for example `v5.1-free.md` and `v5.1-5000.md`. Update their declared character counts and the README version table. Keep earlier versions intact.
-2. Push the changes to `main` and verify that **Content checks** passes.
-3. Create a tag for that version on the tested commit and push it. The **Publish release** workflow validates the prompts, generates both TXT files and release notes, and publishes the new GitHub Release.
+1. Add the versioned Markdown files, for example `v5.2-free.md` and `v5.2-5000.md`. Keep published versions intact.
+2. Update declared LF/CRLF counts, the README table, feedback-form options, and `CHANGELOG.md`. Use a changelog heading such as `## v5.2 - YYYY-MM-DD`.
+3. Merge the changes into `main` and verify that **Content checks** passes.
 
-Tag `v6` uses `v6-free.md` and `v6-5000.md`. Prerelease tag `v6-rc.1` uses those same files and marks the release as a prerelease.
+## Publish
 
-Only new tags trigger publication. Ordinary commits to `main` do not create releases, and existing releases are not overwritten.
+Create and push the version tag on the tested commit. Alternatively, create a branch named `release/v5.2` at that exact commit. Creating this branch is an explicit publication request: the workflow creates the corresponding tag and release after validation, then removes the request branch after success.
+
+Both routes run the tests, validate the matching source files, generate TXT and notes, and include the exact version's changelog entry. The workflow verifies the uploaded files before publishing the draft release. A tag or release that already points to different content is never overwritten.
+
+Only release-tag pushes or creation of a `release/v...` branch can publish. Ordinary commits to `main` and unrelated branches do not publish releases. The source commit must already belong to `main`.
+
+Prerelease tags such as `v6-rc.1` use the `v6-free.md` and `v6-5000.md` sources and need an exact `v6-rc.1` changelog entry. Prereleases are not marked as latest.
 
 ## Local validation
 
 ```bash
 python -m unittest discover -s tests -v
-python scripts/check_content.py --release-tag v5 --export-dir release-preview
+python scripts/check_content.py --release-tag v5.1 --export-dir release-preview
 ```
 
-Replace `v5` with the version being prepared and choose any local output directory. This creates preview assets without publishing anything.
+Replace `v5.1` with the version being prepared. This creates preview assets without publishing anything. Counts include the final newline; exported TXT uses LF and both LF/CRLF variants must fit the limit.
 
-## Checks
-
-- One fenced `text` block per Markdown variant, accurate declared character counts, valid local links, and adherence to the 1,500/5,000-character limits.
-- Generated TXT files must match the source prompts.
-- Release publication requires an existing tag and uses scoped GitHub Actions permissions.
+If publication fails after creating a draft, inspect that draft and its tag before retrying. Existing releases are never silently replaced.

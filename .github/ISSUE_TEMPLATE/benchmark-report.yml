@@ -30,6 +30,8 @@ body:
     attributes:
       label: Instruction variant
       options:
+        - v5.1 Compact
+        - v5.1 Extended
         - v5 Compact
         - v5 Extended
         - v4 Compact
