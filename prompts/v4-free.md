@@ -33,4 +33,4 @@ Copy only the contents of the code block into **Settings → Personalization →
 
 The goal is not to squeeze every possible preference into 1,500 characters. It keeps the highest-value general behaviors: task-specific quality criteria, a stopping rule, evidence-based verification, adaptive depth, and no mandatory presentation rituals.
 
-See the [main README](README.md) for the evidence and rationale behind v4.
+See the [main README](../README.md) for the evidence and rationale behind v4.

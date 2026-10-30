@@ -83,16 +83,17 @@ def load_validated_prompts(root: Path, version: str) -> dict[str, str]:
     prompts: dict[str, str] = {}
     readme = (root / "README.md").read_text(encoding="utf-8")
     for variant, (suffix, limit) in VARIANTS.items():
-        path = root / f"{source_version(version)}-{suffix}.md"
+        path = root / "prompts" / f"{source_version(version)}-{suffix}.md"
         markdown = path.read_text(encoding="utf-8")
         prompt = extract_prompt(markdown, path, limit)
         declared_in_readme = f"| **{version} {variant.title()}** | {len(prompt):,} characters"
         if declared_in_readme not in readme:
             raise ValueError(f"README.md: missing or stale character count for {version} {variant}")
         prompts[variant] = prompt
-        validate_local_links(path)
         crlf_count = len(prompt.replace("\n", "\r\n"))
         print(f"PASS {path.name}: {len(prompt)}/{limit} LF, {crlf_count}/{limit} CRLF characters")
+    for page in sorted((root / "prompts").glob("*.md")):
+        validate_local_links(page)
     validate_local_links(root / "README.md")
     print("PASS local Markdown links and README counts")
     return prompts

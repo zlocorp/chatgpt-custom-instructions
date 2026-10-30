@@ -1,10 +1,10 @@
 # Publishing releases
 
-Versioned Markdown files are the source of truth. GitHub Actions generates the two TXT attachments; do not maintain separate copies in Git.
+Versioned Markdown files in `prompts/` are the source of truth. GitHub Actions generates the two TXT attachments; do not maintain separate copies in Git.
 
 ## Prepare a version
 
-1. For a minor release such as `v5.2`, update `v5-free.md` and `v5-5000.md` in place; for a new major version such as `v6`, create `v6-free.md` and `v6-5000.md`. Previous releases are preserved by their tags and attachments.
+1. For a minor release such as `v5.2`, update `prompts/v5-free.md` and `prompts/v5-5000.md` in place; for a new major version such as `v6`, create `prompts/v6-free.md` and `prompts/v6-5000.md`. Previous releases are preserved by their tags and attachments.
 2. Update declared LF/CRLF counts, the README table, feedback-form options, and `CHANGELOG.md`. Use a changelog heading such as `## v5.2 - YYYY-MM-DD`.
 3. Merge the changes into `main` and verify that **Content checks** passes.
 
@@ -16,7 +16,7 @@ Both routes run the tests, validate the major-version source files at the reques
 
 Only release-tag pushes or creation/update of a `release/v...` branch can publish. Ordinary commits to `main` and unrelated branches do not publish releases. The source commit must already belong to `main`.
 
-Prerelease tags such as `v6-rc.1` use the same `v6-free.md` and `v6-5000.md` sources and need an exact `v6-rc.1` changelog entry. Prereleases are not marked as latest.
+Prerelease tags such as `v6-rc.1` use the same `prompts/v6-free.md` and `prompts/v6-5000.md` sources and need an exact `v6-rc.1` changelog entry. Prereleases are not marked as latest.
 
 ## Local validation
 

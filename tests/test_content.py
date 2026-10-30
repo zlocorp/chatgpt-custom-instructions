@@ -30,13 +30,14 @@ class ContentChecksTests(unittest.TestCase):
     def test_latest_version_follows_changelog_not_source_filename(self):
         with TemporaryDirectory() as temp:
             root = Path(temp)
+            (root / "prompts").mkdir()
             (root / "CHANGELOG.md").write_text(
                 "## Repository maintenance - 2026-10-30\n"
                 "## v5.2 - 2026-11-01\n"
                 "## v5.1 - 2026-10-29\n",
                 encoding="utf-8",
             )
-            (root / "v5-free.md").touch()
+            (root / "prompts" / "v5-free.md").touch()
             self.assertEqual(latest_version(root), "v5.2")
 
     def test_minor_and_prerelease_tags_use_major_source_names(self):
@@ -132,13 +133,14 @@ class ContentChecksTests(unittest.TestCase):
     def test_load_full_fixture_and_reject_stale_readme(self):
         with TemporaryDirectory() as temp:
             root = Path(temp)
+            (root / "prompts").mkdir()
             (root / "README.md").write_text(
                 "| **v5 Compact** | 4 characters | 1,500 characters |\n"
                 "| **v5 Extended** | 4 characters | 5,000 characters |\n",
                 encoding="utf-8",
             )
             for filename in ("v5-free.md", "v5-5000.md"):
-                (root / filename).write_text(
+                (root / "prompts" / filename).write_text(
                     "The prompt contains **4 characters**.\n\n```text\nHEY\n```\n",
                     encoding="utf-8",
                 )
@@ -151,19 +153,20 @@ class ContentChecksTests(unittest.TestCase):
     def test_minor_release_uses_updated_major_files_not_older_minor_copies(self):
         with TemporaryDirectory() as temp:
             root = Path(temp)
+            (root / "prompts").mkdir()
             (root / "README.md").write_text(
                 "| **v5.2 Compact** | 4 characters | 1,500 characters |\n"
                 "| **v5.2 Extended** | 4 characters | 5,000 characters |\n",
                 encoding="utf-8",
             )
             for file in ("v5-free.md", "v5-5000.md"):
-                (root / file).write_text(
+                (root / "prompts" / file).write_text(
                     "The prompt contains **4 characters**.\n"
                     "```text\nHEY\n```\n",
                     encoding="utf-8",
                 )
-            (root / "v5.1-free.md").write_text("stale minor version", encoding="utf-8")
-            (root / "v5.1-5000.md").write_text("stale minor version", encoding="utf-8")
+            (root / "prompts" / "v5.1-free.md").write_text("stale minor version", encoding="utf-8")
+            (root / "prompts" / "v5.1-5000.md").write_text("stale minor version", encoding="utf-8")
             self.assertEqual(
                 load_validated_prompts(root, "v5.2"),
                 {"compact": "HEY\n", "extended": "HEY\n"},
@@ -172,13 +175,14 @@ class ContentChecksTests(unittest.TestCase):
     def test_prerelease_preserves_full_tag_in_readme_label(self):
         with TemporaryDirectory() as temp:
             root = Path(temp)
+            (root / "prompts").mkdir()
             (root / "README.md").write_text(
                 "| **v6-rc.1 Compact** | 4 characters | 1,500 characters |\n"
                 "| **v6-rc.1 Extended** | 4 characters | 5,000 characters |\n",
                 encoding="utf-8",
             )
             for file in ("v6-free.md", "v6-5000.md"):
-                (root / file).write_text(
+                (root / "prompts" / file).write_text(
                     "The prompt contains **4 characters**.\n"
                     "```text\nHEY\n```\n",
                     encoding="utf-8",
@@ -188,14 +192,44 @@ class ContentChecksTests(unittest.TestCase):
     def test_missing_major_source_is_not_silently_replaced_by_minor_copy(self):
         with TemporaryDirectory() as temp:
             root = Path(temp)
+            (root / "prompts").mkdir()
             (root / "README.md").write_text(
                 "| **v5.2 Compact** | 4 characters | 1,500 characters |\n"
                 "| **v5.2 Extended** | 4 characters | 5,000 characters |\n",
                 encoding="utf-8",
             )
-            (root / "v5.1-free.md").write_text("stale", encoding="utf-8")
+            (root / "prompts" / "v5.1-free.md").write_text("stale", encoding="utf-8")
             with self.assertRaises(FileNotFoundError):
                 load_validated_prompts(root, "v5.2")
+
+    def test_archived_prompt_links_and_figures_are_checked(self):
+        with TemporaryDirectory() as temp:
+            root = Path(temp)
+            sources = root / "prompts"
+            sources.mkdir()
+            (root / "README.md").write_text(
+                "| **v5.1 Compact** | 4 characters | 1,500 characters |\n"
+                "| **v5.1 Extended** | 4 characters | 5,000 characters |\n",
+                encoding="utf-8",
+            )
+            for filename in ("v5-free.md", "v5-5000.md"):
+                (sources / filename).write_text(
+                    "The prompt contains **4 characters**.\n```text\nHEY\n```\n",
+                    encoding="utf-8",
+                )
+            (sources / "v3.md").write_text(
+                "[Home](../README.md)\n![Chart](assets/v3_graph.png)\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "missing local"):
+                load_validated_prompts(root, "v5.1")
+            figures = sources / "assets"
+            figures.mkdir()
+            (figures / "v3_graph.png").write_bytes(b"historical graph")
+            self.assertEqual(
+                load_validated_prompts(root, "v5.1"),
+                {"compact": "HEY\n", "extended": "HEY\n"},
+            )
 
     def test_detect_missing_relative_link(self):
         with TemporaryDirectory() as temp:

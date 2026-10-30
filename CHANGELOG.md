@@ -1,5 +1,11 @@
 # Changelog
 
+## Repository maintenance - 2026-10-31
+
+- Move v1-v5.x prompt pages to `prompts/` and historical evaluation images to `prompts/assets/`.
+- Update links, release source lookup, documentation and regression tests for the relocated files.
+- Keep all prompt text, upstream attribution, Git history and existing v5/v5.1 tags and release attachments unchanged. No new release is created.
+
 ## Repository maintenance - 2026-10-30
 
 - Keep the latest v5.x prompts in `v5-free.md` and `v5-5000.md`, updating them in place for minor releases.
