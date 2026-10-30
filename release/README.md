@@ -4,7 +4,7 @@ Versioned Markdown files are the source of truth. GitHub Actions generates the t
 
 ## Prepare a version
 
-1. Add the versioned Markdown files, for example `v5.2-free.md` and `v5.2-5000.md`. Keep published versions intact.
+1. For a minor release such as `v5.2`, update `v5-free.md` and `v5-5000.md` in place; for a new major version such as `v6`, create `v6-free.md` and `v6-5000.md`. Previous releases are preserved by their tags and attachments.
 2. Update declared LF/CRLF counts, the README table, feedback-form options, and `CHANGELOG.md`. Use a changelog heading such as `## v5.2 - YYYY-MM-DD`.
 3. Merge the changes into `main` and verify that **Content checks** passes.
 
@@ -12,11 +12,11 @@ Versioned Markdown files are the source of truth. GitHub Actions generates the t
 
 Create and push the version tag on the tested commit. Alternatively, create a branch named `release/v5.2` at that exact commit. Creating or updating this branch is an explicit publication request: the workflow creates the corresponding tag and release after validation, then removes the request branch after success.
 
-Both routes run the tests, validate the matching source files, generate TXT and notes, and include the exact version's changelog entry. The workflow verifies the uploaded files before publishing the draft release. A tag or release that already points to different content is never overwritten.
+Both routes run the tests, validate the major-version source files at the requested tag's commit, generate TXT and notes, and include the exact release tag's changelog entry. The workflow verifies the uploaded files before publishing the draft release. A tag or release that already points to different content is never overwritten.
 
 Only release-tag pushes or creation/update of a `release/v...` branch can publish. Ordinary commits to `main` and unrelated branches do not publish releases. The source commit must already belong to `main`.
 
-Prerelease tags such as `v6-rc.1` use the `v6-free.md` and `v6-5000.md` sources and need an exact `v6-rc.1` changelog entry. Prereleases are not marked as latest.
+Prerelease tags such as `v6-rc.1` use the same `v6-free.md` and `v6-5000.md` sources and need an exact `v6-rc.1` changelog entry. Prereleases are not marked as latest.
 
 ## Local validation
 

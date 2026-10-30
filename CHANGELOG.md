@@ -1,5 +1,11 @@
 # Changelog
 
+## Repository maintenance - 2026-10-30
+
+- Keep the latest v5.x prompts in `v5-free.md` and `v5-5000.md`, updating them in place for minor releases.
+- Preserve prior minor versions in immutable Git tags and their published release attachments. Remove redundant `v5.1-*.md` files from the current branch without altering the v5 or v5.1 releases.
+- Select Markdown sources by major version while retaining the complete tag for README labels, changelog entries and release notes.
+
 ## v5.1 - 2026-10-29
 
 ### Instructions

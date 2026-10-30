@@ -10,6 +10,7 @@ from scripts.check_content import (
     latest_version,
     load_validated_prompts,
     version_from_tag,
+    source_version,
     render_release_notes,
     validate_local_links,
 )
@@ -19,19 +20,38 @@ class ContentChecksTests(unittest.TestCase):
     def test_valid_release_tags(self):
         for tag in ("v5", "v5.1", "v5.1.2", "v5.1-rc.1", "v17.0.9"):
             with self.subTest(tag=tag):
-                self.assertEqual(version_from_tag(tag), tag.split("-", 1)[0])
+                self.assertEqual(version_from_tag(tag), tag)
 
     def test_bad_release_tags(self):
         for tag in ("v0", "v05", "v5.01", "v5foo", "v5.1.2.3", "v5/../main", "v5-rc", "evil"):
             with self.subTest(tag=tag), self.assertRaises(ValueError):
                 version_from_tag(tag)
 
-    def test_select_latest_version(self):
+    def test_latest_version_follows_changelog_not_source_filename(self):
         with TemporaryDirectory() as temp:
             root = Path(temp)
-            for name in ("v4-free.md", "v5-free.md", "v10-free.md", "v10-5000.md"):
-                (root / name).touch()
-            self.assertEqual(latest_version(root), "v10")
+            (root / "CHANGELOG.md").write_text(
+                "## Repository maintenance - 2026-10-30\n"
+                "## v5.2 - 2026-11-01\n"
+                "## v5.1 - 2026-10-29\n",
+                encoding="utf-8",
+            )
+            (root / "v5-free.md").touch()
+            self.assertEqual(latest_version(root), "v5.2")
+
+    def test_minor_and_prerelease_tags_use_major_source_names(self):
+        cases = {
+            "v5": "v5",
+            "v5.1": "v5",
+            "v5.2": "v5",
+            "v5.2.3": "v5",
+            "v6-rc.1": "v6",
+            "v6.1-beta.2": "v6",
+            "v10.7": "v10",
+        }
+        for tag, source in cases.items():
+            with self.subTest(tag=tag):
+                self.assertEqual(source_version(tag), source)
 
     def test_extract_keeps_exact_final_newline(self):
         source = "# Example\n\nThe prompt contains **6 characters**.\n\n```text\nHELLO\n```\n"
@@ -127,6 +147,55 @@ class ContentChecksTests(unittest.TestCase):
             (root / "README.md").write_text("| **v5 Compact** | 3 characters |\n", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "README.md"):
                 load_validated_prompts(root, "v5")
+
+    def test_minor_release_uses_updated_major_files_not_older_minor_copies(self):
+        with TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "README.md").write_text(
+                "| **v5.2 Compact** | 4 characters | 1,500 characters |\n"
+                "| **v5.2 Extended** | 4 characters | 5,000 characters |\n",
+                encoding="utf-8",
+            )
+            for file in ("v5-free.md", "v5-5000.md"):
+                (root / file).write_text(
+                    "The prompt contains **4 characters**.\n"
+                    "```text\nHEY\n```\n",
+                    encoding="utf-8",
+                )
+            (root / "v5.1-free.md").write_text("stale minor version", encoding="utf-8")
+            (root / "v5.1-5000.md").write_text("stale minor version", encoding="utf-8")
+            self.assertEqual(
+                load_validated_prompts(root, "v5.2"),
+                {"compact": "HEY\n", "extended": "HEY\n"},
+            )
+
+    def test_prerelease_preserves_full_tag_in_readme_label(self):
+        with TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "README.md").write_text(
+                "| **v6-rc.1 Compact** | 4 characters | 1,500 characters |\n"
+                "| **v6-rc.1 Extended** | 4 characters | 5,000 characters |\n",
+                encoding="utf-8",
+            )
+            for file in ("v6-free.md", "v6-5000.md"):
+                (root / file).write_text(
+                    "The prompt contains **4 characters**.\n"
+                    "```text\nHEY\n```\n",
+                    encoding="utf-8",
+                )
+            self.assertEqual(load_validated_prompts(root, "v6-rc.1")["compact"], "HEY\n")
+
+    def test_missing_major_source_is_not_silently_replaced_by_minor_copy(self):
+        with TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "README.md").write_text(
+                "| **v5.2 Compact** | 4 characters | 1,500 characters |\n"
+                "| **v5.2 Extended** | 4 characters | 5,000 characters |\n",
+                encoding="utf-8",
+            )
+            (root / "v5.1-free.md").write_text("stale", encoding="utf-8")
+            with self.assertRaises(FileNotFoundError):
+                load_validated_prompts(root, "v5.2")
 
     def test_detect_missing_relative_link(self):
         with TemporaryDirectory() as temp:

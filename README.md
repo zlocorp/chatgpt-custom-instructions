@@ -8,8 +8,8 @@ Choose the version that fits your ChatGPT Custom Instructions field, copy its pr
 
 | Version | Prompt length (LF) | With CRLF | Field limit | Get started |
 | --- | ---: | ---: | ---: | --- |
-| **v5.1 Compact** | 1,482 characters | 1,493 characters | 1,500 characters | [Open prompt](v5.1-free.md) |
-| **v5.1 Extended** | 4,921 characters | 4,954 characters | 5,000 characters | [Open prompt](v5.1-5000.md) |
+| **v5.1 Compact** | 1,482 characters | 1,493 characters | 1,500 characters | [Open prompt](v5-free.md) |
+| **v5.1 Extended** | 4,921 characters | 4,954 characters | 5,000 characters | [Open prompt](v5-5000.md) |
 
 Choose by the limit shown in your account; see [OpenAI's Custom Instructions FAQ](https://help.openai.com/en/articles/8096356-chatgpt-custom-instructions). Both counts include the final newline, not the surrounding Markdown.
 
@@ -60,15 +60,15 @@ Historical [v3 evaluation results](v3.md), including the documented grader issue
 
 | Version | Purpose |
 | --- | --- |
-| [v5 Extended](v5-5000.md) | Original v5 text, matching the published v5 release. |
-| [v5 Compact](v5-free.md) | Original compact v5 text, matching the published v5 release. |
+| [v5 Extended](https://github.com/zlocorp/chatgpt-custom-instructions/blob/v5/v5-5000.md) | Original v5 text at its published tag. |
+| [v5 Compact](https://github.com/zlocorp/chatgpt-custom-instructions/blob/v5/v5-free.md) | Original compact v5 text at its published tag. |
 | [v4 Extended](v4-5000.md) | Earlier 5,000-character edition. |
 | [v4 Compact](v4-free.md) | Earlier 1,500-character edition. |
 | [v3](v3.md) | Historical prompt and evaluation caveats. |
 | [v2](v2.md) | Earlier iteration. |
 | [v1](v1.md) | Earlier iteration. |
 
-The [v5 release and its downloads](https://github.com/zlocorp/chatgpt-custom-instructions/releases/tag/v5) remain unchanged.
+The [v5 release and its downloads](https://github.com/zlocorp/chatgpt-custom-instructions/releases/tag/v5) remain unchanged. Minor updates reuse the current major-version Markdown files; each release tag preserves its own source snapshot.
 
 </details>
 

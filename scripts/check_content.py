@@ -13,7 +13,7 @@ TAG_PATTERN = re.compile(
     r"v(?P<version>[1-9][0-9]*(?:\.(?:0|[1-9][0-9]*)){0,2})"
     r"(?:-(?:alpha|beta|rc)\.(?:0|[1-9][0-9]*))?\Z"
 )
-VERSION_FILE = re.compile(r"v(?P<version>[1-9][0-9]*(?:\.(?:0|[1-9][0-9]*)){0,2})-free\.md\Z")
+CHANGELOG_VERSION = re.compile(r"^## (v[^ \n]+)(?: - [^\n]+)?$", re.MULTILINE)
 PROMPT_BLOCK = re.compile(r"^```text[ \t]*\n(.*?)\n```[ \t]*$", re.MULTILINE | re.DOTALL)
 DECLARED_COUNT = re.compile(r"The prompt (?:contains|is) \*\*([0-9,]+) characters\*\*", re.IGNORECASE)
 DECLARED_CRLF_COUNT = re.compile(
@@ -23,24 +23,25 @@ VARIANTS = {"compact": ("free", 1500), "extended": ("5000", 5000)}
 
 
 def version_from_tag(tag: str) -> str:
+    if not TAG_PATTERN.fullmatch(tag):
+        raise ValueError(f"Invalid release tag {tag!r}; expected v5, v5.1, v5.1.2, or v5.1-rc.1")
+    return tag
+
+
+def source_version(tag: str) -> str:
+    """Minor and prerelease tags reuse the current major-version Markdown files."""
     match = TAG_PATTERN.fullmatch(tag)
     if not match:
-        raise ValueError(f"Invalid release tag {tag!r}; expected v5, v5.1, v5.1.2, or v5.1-rc.1")
-    return f"v{match.group('version')}"
+        raise ValueError(f"Invalid release tag {tag!r}")
+    return f"v{match.group('version').split('.')[0]}"
 
 
 def latest_version(root: Path) -> str:
-    candidates: list[tuple[tuple[int, int, int], str]] = []
-    for path in root.glob("v*-free.md"):
-        match = VERSION_FILE.fullmatch(path.name)
-        if match:
-            version = match.group("version")
-            components = [int(x) for x in version.split(".")]
-            key = tuple((components + [0, 0, 0])[:3])
-            candidates.append((key, f"v{version}"))
-    if not candidates:
-        raise ValueError("No versioned Compact prompt found")
-    return max(candidates)[1]
+    """Use the newest released version in CHANGELOG, not the major source filename."""
+    changelog = (root / "CHANGELOG.md").read_text(encoding="utf-8")
+    for match in CHANGELOG_VERSION.finditer(changelog):
+        return version_from_tag(match.group(1))
+    raise ValueError("CHANGELOG.md: no valid version heading found")
 
 
 def extract_prompt(markdown: str, path: Path, limit: int) -> str:
@@ -82,7 +83,7 @@ def load_validated_prompts(root: Path, version: str) -> dict[str, str]:
     prompts: dict[str, str] = {}
     readme = (root / "README.md").read_text(encoding="utf-8")
     for variant, (suffix, limit) in VARIANTS.items():
-        path = root / f"{version}-{suffix}.md"
+        path = root / f"{source_version(version)}-{suffix}.md"
         markdown = path.read_text(encoding="utf-8")
         prompt = extract_prompt(markdown, path, limit)
         declared_in_readme = f"| **{version} {variant.title()}** | {len(prompt):,} characters"
