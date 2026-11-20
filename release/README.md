@@ -22,9 +22,9 @@ Prerelease tags such as `v6-rc.1` use the same `prompts/v6-free.md` and `prompts
 
 ```bash
 python -m unittest discover -s tests -v
-python scripts/check_content.py --release-tag v5.1 --export-dir release-preview
+python scripts/check_content.py --release-tag v5.2 --export-dir release-preview
 ```
 
-Replace `v5.1` with the version being prepared. This creates preview assets without publishing anything. Counts include the final newline; exported TXT uses LF and both LF/CRLF variants must fit the limit.
+Replace `v5.2` with the version being prepared. This creates preview assets without publishing anything. Counts include the final newline; exported TXT uses LF and both LF/CRLF variants must fit the limit.
 
 If publication fails after creating a draft, inspect that draft and its tag before retrying. A matching unpublished draft can be resumed only when its notes, exact asset names and bytes match the validated output, and its target is an ancestor of the tested commit. Existing published releases are never changed. Tags are created explicitly before publication and are never moved.

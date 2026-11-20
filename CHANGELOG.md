@@ -1,5 +1,24 @@
 # Changelog
 
+## v5.2 - 2026-11-20
+
+### Instructions
+
+- Prioritize complete, self-contained answers, retaining necessary explanations and evidence when shortening the response.
+- Distinguish reversible workflow assumptions from unknown facts; give the supported parts of an answer and identify evidence gaps instead of inventing details.
+- Make citation support explicit. Extended checks the wording and scope of sourced claims and separates source content from added analysis; Compact explicitly requests supporting evidence and warns against treating incomplete retrieval as proof of absence.
+- In Extended, retain the inputs, units, assumptions, and steps needed to verify substantial calculations, and prevent optional suggestions from becoming invented requirements.
+- Preserve task-adaptive checks, factual fidelity in editing, authorized task completion, and the treatment of embedded source instructions as data. Condense presentation guidance without imposing a persona or a fixed answer length.
+
+### Compatibility and documentation
+
+- Compact: 1,469 characters with LF; 1,480 with CRLF. Extended: 4,945 characters with LF; 4,978 with CRLF. Counts include the final newline; TXT exports use LF.
+- Update the existing major-version source pages, README, feedback-form options, and release instructions. Preserve earlier releases through their tags and attachments.
+- Prioritize current official OpenAI prompting guidance, document selected related chat-instruction sources, and add a focused proposed comparison for v5.2.
+- Describe release variants by character limits rather than assuming that a particular plan always has the same field size.
+
+No controlled model A/B evaluation has been completed. The changes are supported by a source and text review; static checks do not establish improved accuracy, latency, or cost.
+
 ## Repository maintenance - 2026-10-31
 
 - Move v1-v5.x prompt pages to `prompts/` and historical evaluation images to `prompts/assets/`.

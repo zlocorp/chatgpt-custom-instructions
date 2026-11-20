@@ -103,8 +103,9 @@ def render_release_notes(tag: str, prompts: dict[str, str]) -> str:
     return (
         f"# {tag} — ChatGPT Custom Instructions\n\n"
         "Two independently maintained general-purpose Custom Instructions variants:\n\n"
-        f"- **Compact:** {len(prompts['compact']):,} / 1,500 characters (Free and Go).\n"
-        f"- **Extended:** {len(prompts['extended']):,} / 5,000 characters (larger Custom Instructions field).\n\n"
+        f"- **Compact:** {len(prompts['compact']):,} / 1,500 characters.\n"
+        f"- **Extended:** {len(prompts['extended']):,} / 5,000 characters.\n\n"
+        "Choose the variant that fits the limit shown in your account. Counts include the final LF newline.\n\n"
         "Copy one TXT attachment into ChatGPT Custom Instructions, replacing previous general-purpose instructions.\n\n"
         "Performance improvements have not yet been established in controlled tests. "
         "See the repository README for setup and attribution.\n"
